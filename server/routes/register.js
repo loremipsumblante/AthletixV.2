@@ -4,10 +4,9 @@ import { supabase } from "../supabaseClient.js";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { name, email, password, role, gender, birthDate, region, sport, bio } = req.body;
+  const { name, email, password, role, gender, birthDate, region, sport } = req.body;
 
   try {
-    //creates user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -19,7 +18,16 @@ router.post("/", async (req, res) => {
 
     if (authError) throw new Error(authError.message);
 
-    //inserts user details in users table
+    const { data: sportData, error: sportError } = await supabase
+      .from("sports")
+      .select("sport_name")
+      .eq("sport_id", parseInt(sport, 10))
+      .single();  
+
+    if (sportError) throw new Error("Failed to fetch sport name");
+
+    const sportName = sportData?.sport_name || "";
+
     const { error: userError } = await supabase.from("users").insert({
       user_id: authData.user?.id,
       fullname: name,
@@ -28,7 +36,8 @@ router.post("/", async (req, res) => {
       birthdate: birthDate,
       location: region,
       sport_id: parseInt(sport, 10),
-      bio,
+      sport_name: sportName, 
+      bio: req.body.bio,
       registration_date: new Date().toISOString(),
     });
 

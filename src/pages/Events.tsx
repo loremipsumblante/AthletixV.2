@@ -1,115 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import EventCard from "@/components/events/EventCard";
-import EventCreationForm from "@/components/events/EventCreationForm"; 
+import EventCreationForm from "@/components/events/EventCreationForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Plus } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Events = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false); 
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const { role, loading } = useUserRole();
-  const [events, setEvents] = useState([
-    
-    {
-      id: "1",
-      title: "Elite Basketball Showcase",
-      type: "showcase" as const,
-      sport: "Basketball",
-      date: "2024-04-15",
-      location: "Madison Square Garden, NY",
-      organizer: "NBA Scouts Association",
-      participants: 45,
-      maxParticipants: 50,
-      description:
-        "Annual showcase for top high school basketball talents looking to get recruited by college programs.",
-      status: "upcoming" as const,
-    },
-    {
-      id: "2",
-      title: "Regional Soccer Tryouts",
-      type: "tryout" as const,
-      sport: "Soccer",
-      date: "2024-03-28",
-      location: "LA Galaxy Training Center, CA",
-      organizer: "MLS Youth Development",
-      participants: 120,
-      maxParticipants: 150,
-      description:
-        "Open tryouts for U19 soccer players seeking opportunities in professional youth academies.",
-      status: "upcoming" as const,
-    },
-    {
-      id: "3",
-      title: "Track & Field Championships",
-      type: "competition" as const,
-      sport: "Track & Field",
-      date: "2024-05-10",
-      location: "Olympic Training Center, CO",
-      organizer: "USA Track & Field",
-      participants: 200,
-      maxParticipants: 300,
-      description:
-        "National championship event featuring the best young track and field athletes from across the country.",
-      status: "upcoming" as const,
-    },
-    {
-      id: "4",
-      title: "Elite Football Camp",
-      type: "camp" as const,
-      sport: "Football",
-      date: "2024-06-15",
-      location: "University of Texas, Austin",
-      organizer: "College Football Alliance",
-      participants: 75,
-      maxParticipants: 100,
-      description:
-        "Intensive training camp for quarterback and wide receiver development with college coaches.",
-      status: "upcoming" as const,
-    },
-    {
-      id: "5",
-      title: "Swimming Invitational",
-      type: "competition" as const,
-      sport: "Swimming",
-      date: "2024-04-05",
-      location: "Aquatic Center, Miami, FL",
-      organizer: "USA Swimming",
-      participants: 150,
-      maxParticipants: 150,
-      description:
-        "Elite swimming competition featuring Olympic hopefuls and national record holders.",
-      status: "ongoing" as const,
-    },
-    {
-      id: "6",
-      title: "Baseball Scout Day",
-      type: "showcase" as const,
-      sport: "Baseball",
-      date: "2024-03-15",
-      location: "Fenway Park, Boston, MA",
-      organizer: "MLB Scout Network",
-      participants: 60,
-      maxParticipants: 60,
-      description:
-        "Exclusive showcase event for top high school baseball prospects.",
-      status: "completed" as const,
-    },
-  ]);
+  const [events, setEvents] = useState<any[]>([]);
 
   const handleEventCreated = (newEvent: any) => {
-    setEvents((prev) => [...prev, newEvent]);
+    // Compute status for the new event
+    const now = new Date();
+    const startDate = new Date(newEvent.start_datetime);
+    const endDate = new Date(newEvent.end_datetime);
+    let status: "upcoming" | "ongoing" | "completed" = "upcoming";
+    if (now < startDate) status = "upcoming";
+    else if (now >= startDate && now <= endDate) status = "ongoing";
+    else status = "completed";
+
+    setEvents((prev) => [...prev, { ...newEvent, status }]);
   };
+
+  const getStatus = (start: string, end: string) => {
+    const now = new Date();
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (now < startDate) return "upcoming";
+    if (now >= startDate && now <= endDate) return "ongoing";
+    return "completed";
+  };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/get-events");
+        const data = await response.json();
+
+        const withStatus = data.events.map((event: any) => ({
+          ...event,
+          status: getStatus(event.start_datetime, event.end_datetime),
+        }));
+
+        setEvents(withStatus);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,13 +70,14 @@ const Events = () => {
             </p>
           </div>
           {!loading && role === "organizer" && (
-          <Button onClick={() => setIsFormOpen(true)} className="hidden md:flex">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
-          </Button>
-        )}
-      </div>
+            <Button onClick={() => setIsFormOpen(true)} className="hidden md:flex">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Event
+            </Button>
+          )}
+        </div>
 
+        {/* Search Bar */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -141,77 +88,51 @@ const Events = () => {
               className="pl-10"
             />
           </div>
-
-          <Select>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="All Sports" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sports</SelectItem>
-              <SelectItem value="basketball">Basketball</SelectItem>
-              <SelectItem value="football">Football</SelectItem>
-              <SelectItem value="soccer">Soccer</SelectItem>
-              <SelectItem value="baseball">Baseball</SelectItem>
-              <SelectItem value="swimming">Swimming</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Event Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="tryout">Tryouts</SelectItem>
-              <SelectItem value="competition">Competitions</SelectItem>
-              <SelectItem value="showcase">Showcases</SelectItem>
-              <SelectItem value="camp">Camps</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
+        {/* Tabs for Upcoming, Ongoing, Completed */}
         <Tabs defaultValue="upcoming" className="space-y-6">
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="ongoing">Ongoing</TabsTrigger>
-            <TabsTrigger value="completed">Past Events</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upcoming" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events
-                .filter((event) => event.status === "upcoming")
-                .map((event) => (
-                  <EventCard key={event.id} {...event} />
-                ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="ongoing" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events
-                .filter((event) => event.status === "ongoing")
-                .map((event) => (
-                  <EventCard key={event.id} {...event} />
-                ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="completed" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events
-                .filter((event) => event.status === "completed")
-                .map((event) => (
-                  <EventCard key={event.id} {...event} />
-                ))}
-            </div>
-          </TabsContent>
+          {["upcoming", "ongoing", "completed"].map((status) => (
+            <TabsContent key={status} value={status} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events
+                  .filter((event) => event.status === status)
+                  .filter(
+                        (event) =>
+                          (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+                          (event.sport_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+                          (event.location?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+                      )
+                  .map((event) => (
+                    <EventCard
+                      key={event.event_id}
+                      id={event.event_id}
+                      title={event.title}
+                      type={event.type}
+                      sport={event.sport_name}
+                      date={event.start_datetime}
+                      location={event.location}
+                      organizer={event.organizer_id}
+                      description={event.description}
+                      status={event.status}
+                    />
+                  ))}
+              </div>
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
 
       <EventCreationForm
         open={isFormOpen}
         onClose={() => setIsFormOpen(false)}
+        onEventCreated={handleEventCreated}
       />
     </div>
   );

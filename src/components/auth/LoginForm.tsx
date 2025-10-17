@@ -26,7 +26,10 @@ const LoginForm = () => {
       const response = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        body: JSON.stringify({ 
+          email: formData.email, 
+          password: formData.password 
+        }),
       });
 
       const result = await response.json();
@@ -42,6 +45,10 @@ const LoginForm = () => {
       access_token: result.session?.access_token,
       refresh_token: result.session?.refresh_token,
       });
+      
+      localStorage.setItem("userRole", result.user.role);
+      localStorage.setItem("userId", result.user?.id);
+      localStorage.setItem("userEmail", result.user?.email);
 
       toast.success(result.message || "Login successful!");
       navigate("/");

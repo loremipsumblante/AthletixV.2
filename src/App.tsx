@@ -25,11 +25,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthProvider> {/* ✅ Add this wrapper */}
+      <AuthProvider> 
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/athletes" element={<Athletes />} />
+            <Route path="/athletes/:id" element={<AthleteProfile />} />
             <Route path="/search" element={<Search />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetails />} />
@@ -40,7 +40,6 @@ const App = () => (
             <Route path="/athletes/:id" element={<AthleteProfile />} />
             <Route path="/users/:id" element={<UserProfile />} />
             <Route path="/organizers/:id" element={<OrganizerProfile />} />
-            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

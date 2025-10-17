@@ -5,22 +5,38 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { email, password } = req.body;
+  
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) return res.status(401).json({ message: error.message });
 
+    const user = data.user;
+    const session = data.session;
+
     //email verification
     if (!data.user?.email_confirmed_at) {
       return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
+    const userId = user.id;
+
+    const { data: userData, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+
     //session
     res.status(200).json({
       message: "Login successful",
-      user: data.user,
-      session: data.session, 
+      user: {
+        id: user.id,
+        email: user.email,
+        role: userData?.role,
+      },
+        session: data.session
     });
   } catch (err) {
     console.error(err);

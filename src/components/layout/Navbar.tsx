@@ -40,8 +40,11 @@ const Navbar = () => {
 
   const handleLogout = async () => {
   await supabase.auth.signOut();
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userRole");
   navigate("/");
-};
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -102,10 +105,20 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate(`/users/${user?.id}`)}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const role = localStorage.getItem("userRole"); 
+                      if (role === "athlete") {
+                        navigate(`/athletes/${user?.id}`);
+                      } else {
+                        navigate(`/users/${user?.id}`);
+                      }
+                    }}
+                    >
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={() => navigate('/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>

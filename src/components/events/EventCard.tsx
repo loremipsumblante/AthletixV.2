@@ -12,8 +12,6 @@ interface EventCardProps {
   date: string;
   location: string;
   organizer: string;
-  participants: number;
-  maxParticipants: number;
   description: string;
   status: "upcoming" | "ongoing" | "completed";
 }
@@ -26,8 +24,6 @@ const EventCard = ({
   date,
   location,
   organizer,
-  participants,
-  maxParticipants,
   description,
   status,
 }: EventCardProps) => {
@@ -73,12 +69,8 @@ const EventCard = ({
             <MapPin className="h-4 w-4 text-muted-foreground" />
             <span>{location}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span>{participants}/{maxParticipants} Participants</span>
-          </div>
         </div>
-        
+        <div className="mt-4 w-full"></div>
         <Link to={`/events/${id}`} className="w-full">
           <Button variant="secondary" className="w-full">
             View Details

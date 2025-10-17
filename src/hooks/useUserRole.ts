@@ -1,24 +1,27 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utilities/supabase";
+import { set } from "date-fns";
 
-export function useUserRole() {
+type UserRole = "athlete" | "organizer" | "admin" | "scout" | null;
+
+export const useUserRole = () => {
+  
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from("users")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-        if (!error && data) setRole(data.role);
+
+    const storedRole = localStorage.getItem("userRole");
+    if (storedRole) {
+      const validRoles = ["athlete", "organizer", "admin", "scout"];
+      if (validRoles.includes(storedRole as UserRole)) {
+        setRole(storedRole as UserRole);
+      }else{
+        setRole(null);
       }
+    
       setLoading(false);
     }
-    fetchRole();
   }, []);
 
   return { role, loading };
