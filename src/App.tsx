@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AthleteProfile from "./pages/AthleteProfile";
 import UserProfile from "./pages/UserProfile";
 import OrganizerProfile from "./pages/OrganizerProfile";
+import Settings from "./pages/Settings";
 import { AuthProvider } from "@/hooks/AuthProvider";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/athletes/:id" element={<AthleteProfile />} />
             <Route path="/users/:id" element={<UserProfile />} />
             <Route path="/organizers/:id" element={<OrganizerProfile />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

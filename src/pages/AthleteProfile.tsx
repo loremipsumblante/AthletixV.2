@@ -67,7 +67,7 @@ const AthleteProfile = () => {
 
         {/* Profile Header */}
         <div className="bg-muted/30 rounded-lg p-6 md:p-8 mb-8">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
+                        <div className="flex flex-col md:flex-row gap-6 items-start">
             <Avatar className="h-32 w-32">
               {athlete.imageUrl ? (
                 <AvatarImage src={athlete.imageUrl} alt={athlete.name} />
@@ -109,7 +109,21 @@ const AthleteProfile = () => {
                   >
                     {isFollowing ? "Following" : "Follow"}
                   </Button>
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: `${athlete.name} - Athlete Profile`,
+                          text: `Check out ${athlete.name}'s profile on Athletix`,
+                          url: window.location.href,
+                        }).catch(() => {});
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                      }
+                    }}
+                  >
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -180,19 +194,29 @@ const AthleteProfile = () => {
                       <Card key={achievement.id}>
                         <CardContent className="flex items-center gap-4 p-6">
                           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Icon className="h-6 w-6" />
+                            <Icon className="h-6 w-6 text-primary" />
                           </div>
                           <div className="flex-1">
                             <h3 className="font-semibold">{achievement.title}</h3>
+                            {achievement.description && (
+                              <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                            )}
                             {achievement.year && (
-                              <p className="text-sm text-muted-foreground">{achievement.year}</p>
+                              <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
                             )}
                           </div>
                         </CardContent>
                       </Card>
                     );
                   })
-                : "No achievements yet."}
+                : (
+                  <Card>
+                    <CardContent className="p-8 text-center text-muted-foreground">
+                      <Trophy className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>No achievements yet.</p>
+                    </CardContent>
+                  </Card>
+                )}
             </div>
           </TabsContent>
 
@@ -223,28 +247,31 @@ const AthleteProfile = () => {
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email</span>
-                  <span className="font-medium">{athlete.email}</span>
+                  <span className="font-medium">{athlete.email || "N/A"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Phone</span>
-                  <span className="font-medium">{athlete.contactNum}</span>
-                </div>
-              </CardContent>
-              <CardHeader>
-                <CardTitle>Education</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">School</span>
-                  <span className="font-medium">{athlete.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Year</span>
-                  <span className="font-medium">{athlete.contactNum}</span>
+                  <span className="font-medium">{athlete.contactNum || "N/A"}</span>
                 </div>
               </CardContent>
             </Card>
             
+            {athlete.education && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Education</h3>
+                {Array.isArray(athlete.education) ? (
+                  athlete.education.map((edu: any, index: number) => (
+                    <div key={index} className="border-l-4 border-primary pl-4">
+                      <h4 className="font-semibold">{edu.school || "N/A"}</h4>
+                      <p className="text-muted-foreground">{edu.degree || edu.field || "N/A"}</p>
+                      {edu.year && <p className="text-sm text-muted-foreground">{edu.year}</p>}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">{athlete.education}</p>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
