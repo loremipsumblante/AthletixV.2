@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, Globe, ChevronLeft, Star } from "lucide-react";
+import { MapPin, Calendar, Globe, ChevronLeft, Star, Share2 } from "lucide-react";
 import { supabase } from "@/utilities/supabase";
 
 const UserProfile = () => {
@@ -96,6 +96,23 @@ const UserProfile = () => {
                   </div>
                   <p className="text-muted-foreground max-w-2xl mb-3">{user.bio || "N/A"}</p>
                 </div>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: `${user.fullname} - Profile`,
+                        text: `Check out ${user.fullname}'s profile on Athletix`,
+                        url: window.location.href,
+                      }).catch(() => {});
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                    }
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
