@@ -214,7 +214,7 @@ const Settings = () => {
 
           {/* Account Tab */}
           <TabsContent value="account">
-            <Card>
+            <Card className="mb-2">
               <CardHeader>
                 <CardTitle>Account Details</CardTitle>
                 <CardDescription>
@@ -462,7 +462,7 @@ const Settings = () => {
             </Card>
 
             {/* Locations Section */}
-            <Card>
+            <Card className="mb-2">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -601,7 +601,7 @@ const Settings = () => {
             </Card>
 
             {/* Education Section */}
-            <Card>
+            <Card className="mt-2">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -700,7 +700,7 @@ const Settings = () => {
             </Card>
 
             {/* Danger Zone */}
-            <Card className="border-red-200 mt-12">
+            <Card className="border-red-200 mt-4">
               <CardHeader>
                 <CardTitle className="text-red-600">Danger Zone</CardTitle>
                 <CardDescription>

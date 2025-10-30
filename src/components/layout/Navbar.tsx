@@ -108,10 +108,11 @@ const Navbar = () => {
                   <DropdownMenuItem
                     onClick={() => {
                       const role = localStorage.getItem("userRole"); 
+                      const userId = localStorage.getItem("userId");
                       if (role === "athlete") {
-                        navigate(`/athletes/${user?.id}`);
+                        navigate(`/users/${userId}`);
                       } else {
-                        navigate(`/users/${user?.id}`);
+                        navigate(`/users/${userId}`);
                       }
                     }}
                     >
