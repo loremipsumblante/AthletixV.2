@@ -11,6 +11,7 @@ interface AthleteCardProps {
   sport: string;
   position: string;
   age: number;
+  gender?: string; 
   location: string;
   achievements: number;
   stats: {
@@ -27,6 +28,7 @@ const AthleteCard = ({
   sport,
   position,
   age,
+  gender, // ✅ add gender here
   location,
   achievements,
   stats,
@@ -65,7 +67,8 @@ const AthleteCard = ({
                   <Activity className="h-3 w-3" />
                   {sport}
                 </span>
-                <span>{age} years</span>
+                <span>{age} yrs</span>
+               {gender && <span className="capitalize text-muted-foreground">• {gender}</span>}
               </div>
             </div>
           </div>
@@ -78,10 +81,13 @@ const AthleteCard = ({
             <MapPin className="h-3 w-3" />
             {location}
           </span>
+        {/*}
+          --- Achievements showcase (remove) ---
           <span className="flex items-center gap-1 font-medium">
             <Trophy className="h-3 w-3" />
             {achievements} Achievements
           </span>
+        */}
         </div>
         
         <div className="grid grid-cols-3 gap-2">

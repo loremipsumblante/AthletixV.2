@@ -1,62 +1,69 @@
+// server/routes/athletes.js
 import express from "express";
 import { supabase } from "../supabaseClient.js";
 
 const router = express.Router();
 
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-
+// ✅ Fetch all athletes
+router.get("/", async (req, res) => {
   try {
-    //users
-    const { data: userData } = await supabase
+    const { data: users, error: userError } = await supabase
       .from("users")
-      .select("*")
-      .eq("user_id", id)
-      .eq("role", "athlete")
-      .single();
+      .select(`
+        user_id,
+        fullname,
+        sport_id,
+        sport_name,
+        birthdate,
+        gender,
+        bio,
+        registration_date,
+        role,
+        location,
+        verification_status
+      `)
+      .eq("role", "athlete");
 
-    if (!userData) return res.status(404).json({ error: "Athlete not found" });
+    if (userError) throw userError;
+    if (!users) return res.json([]);
 
-    //user details
-    const { data: detailsData } = await supabase
+    // Fetch user details in one query
+    const { data: details, error: detailsError } = await supabase
       .from("user_details")
-      .select("*")
-      .eq("user_id", id)
-      .single();
-    
-    
-    const athleteProfile = {
-      id: userData.user_id,
-      name: userData.fullname,
-      sport: userData.sport_name, 
-      age: new Date().getFullYear() - new Date(userData.birthdate).getFullYear(),
-      bio: userData.bio,
-      joinDate: new Date(userData.registration_date).toLocaleString("default", { month: "long", year: "numeric" }),
-      location: userData.location,
-      verified: userData.verification_status === "verified",
-      height: detailsData?.height_cm || "N/A",
-      weight: detailsData?.weight_kg || "N/A",
-      position: detailsData?.position || "N/A",
-      jerseyNumber: detailsData?.jersey_number || "N/A",
-      videos: [
-        {
-          id: 1,
-          title: "Highlight Video",
-          url: detailsData?.video_url || "https://www.youtube.com/embed/dQw4w9WgXcQ"
-        }
-      ],
-      email: detailsData?.email || "N/A",
-      contactNum: detailsData?.contact_num || "N/A",
-      achievements: [], // optional
-      stats: { overall: [], recent: [] }, // optional
-      imageUrl: "" // optional
-    };
+      .select("*");
 
-    res.json(athleteProfile);
+    if (detailsError) throw detailsError;
 
+    // Merge user info with user_details
+    const athletes = users.map((user) => {
+      const detail = details.find((d) => d.user_id === user.user_id);
+      const age =
+        user.birthdate
+          ? new Date().getFullYear() - new Date(user.birthdate).getFullYear()
+          : "";
+
+      return {
+        id: user.user_id,
+        name: user.fullname,
+        sport: user.sport_name || "",
+        position: detail?.position || "",
+        age: age,
+        gender: user.gender || "",
+        location: user.location || "",
+        achievements: 0, // placeholder
+        stats: [
+          { label: "PPG", value: "0.0" },
+          { label: "RPG", value: "0.0" },
+          { label: "APG", value: "0.0" },
+        ],
+        verified: user.verification_status === "verified",
+      };
+    });
+
+    res.json(athletes);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Failed to load athletes" });
   }
 });
 
